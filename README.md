@@ -4,8 +4,7 @@ perfomed on retina images of patients taken using fundus photography. This proje
 custom ResNet18 model built from scratch using PyTorch. 
 
 > Disclaimer: Not intended for medical diagnosis. This project analyzes medical images for demonstration 
-> purposes only. Always consult with your doctor, or other qualified healthcare professional before
-> self diagnosing.
+> purposes only. Always consult with your doctor, or another qualified healthcare professional for diagnosis.
 
 # Data Source
 See the APTOS 2019 Blindness Detection competition
