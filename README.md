@@ -1,11 +1,12 @@
 # Project Description
-Image classification for early detection of diabetic retinopathy in patients. Implemented a
-custom ResNet18 model from scratch using PyTorch. See the APTOS 2019 Blindness Detection competition
-for the full [data overview](https://www.kaggle.com/c/aptos2019-blindness-detection/overview).
+Image classification for early detection of diabetic retinopathy in patients. Classification is 
+perfomed on retina images of patients taken using fundus photography. This project uses a
+custom ResNet18 model built from scratch using PyTorch. 
 
 # Data Source
-Data for this project is obtained from the 
-[APTOS 2019 Blindness Detection competition](https://www.kaggle.com/c/aptos2019-blindness-detection/data) on Kaggle.
+See the APTOS 2019 Blindness Detection competition
+for the full [overview](https://www.kaggle.com/c/aptos2019-blindness-detection/overview) and [data
+description](https://www.kaggle.com/c/aptos2019-blindness-detection/data) on Kaggle.
 
 To download the data using [Kaggle API](https://github.com/Kaggle/kaggle-api/blob/master/README.md):
 ```bash
