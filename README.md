@@ -3,6 +3,10 @@ Image classification for early detection of diabetic retinopathy in patients. Cl
 perfomed on retina images of patients taken using fundus photography. This project uses a
 custom ResNet18 model built from scratch using PyTorch. 
 
+> Disclaimer: Not intented for medical diagnosis. This project analyzes medical images for demonstration 
+> purposes only. Always consult with your doctor, or other qualified healthcare professional before
+> self diagnosing.
+
 # Data Source
 See the APTOS 2019 Blindness Detection competition
 for the full [overview](https://www.kaggle.com/c/aptos2019-blindness-detection/overview) and [data
