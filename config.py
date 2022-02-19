@@ -7,6 +7,7 @@ resize_sz = 384
 bs = 64
 # for train.py
 drop_last = True
+show = False
 n_cls = len(vocab)
 use_imagenet_wts = True
 lr_head_f = 1e-2
