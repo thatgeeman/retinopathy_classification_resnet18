@@ -47,7 +47,7 @@ def show_preds(dl, limit=6, **kwargs):
 
 
 @torch.no_grad()
-def validate_epoch(valid_dl, model, loss_func=loss_func, show=True):
+def validate_epoch(valid_dl, model, loss_func=loss_func, show=False):
     model.eval()
     l_valid = len(valid_dl)
     valid_loss = 0.0
@@ -93,7 +93,7 @@ def train(train_dl, valid_dl, epochs):
             f'train_score:{(train_ck / l_train):.4f} train_f1:{(train_f1 / l_train):.4f} train_loss:{(train_loss / l_train):.4f}')
         if e % 2 == 0:
             # validate every 2 epochs
-            validate_epoch(valid_dl, model, loss_func=loss_func, show=True)
+            validate_epoch(valid_dl, model, loss_func=loss_func, show=show)
 
 
 if __name__ == '__main__':
