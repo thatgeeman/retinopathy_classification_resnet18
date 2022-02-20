@@ -172,13 +172,19 @@ if __name__ == '__main__':
 
     optim.add_param_group({'params': L(model.parameters())[:-2], 'lr': lr_body_uf})  # make body trainable
     optim.param_groups[0]['lr'] = lr_head_uf
+    
+    # unfreeze
+    for name, p in model.named_parameters():
+        p.requires_grad_(True)
+
     print('training full model')
     train(train_dl, valid_dl, args.uepochs)
     torch.save({
-        'epoch': args.fepochs + args.ufepochs,
+        'epoch': args.fepochs + args.uepochs,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optim.state_dict()
-    }, f'checkpoints/model_c{args.fepochs + args.ufepochs}.pth')
+    }, f'checkpoints/model_c{args.fepochs + args.uepochs}.pth')
 
-    print(f'training complete for {args.fepochs + args.ufepochs} epochs')
+    print(f'training complete for {args.fepochs + args.uepochs} epochs')
     print(f'checkpoints saved to checkpoints/model_c*.pth')
+    
