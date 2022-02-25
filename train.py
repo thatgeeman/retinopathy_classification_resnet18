@@ -150,6 +150,7 @@ if __name__ == '__main__':
     print(f'valid dataloader: {len(valid_dl)}')
     #
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f'using {device}') 
     #
     model = ResNet18(n_cls)
     if use_imagenet_wts:
