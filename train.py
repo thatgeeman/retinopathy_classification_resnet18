@@ -47,7 +47,7 @@ def show_preds(dl, limit=6, **kwargs):
 
 
 @torch.no_grad()
-def validate_epoch(valid_dl, model, loss_func=loss_func, show=False):
+def validate_epoch(valid_dl, model, loss_func=loss_func, show=True):
     model.eval()
     l_valid = len(valid_dl)
     valid_loss = 0.0
@@ -129,7 +129,7 @@ if __name__ == '__main__':
     print(f'training image files: {len(pths)}')
     print(f'vocab: {vocab}')
 
-    data = train_df.sample(frac=1, replace=False).to_records(index=False)
+    data = train_df.sample(frac=frac, replace=False).to_records(index=False)
     split_sz = round(len(data) * 0.8)
     train_data = data[:split_sz]
     valid_data = data[split_sz:]
@@ -143,14 +143,14 @@ if __name__ == '__main__':
 
     train_sampler = WeightedRandomSampler(weights=train_data.weights, num_samples=len(train_ds), replacement=False)
     valid_sampler = WeightedRandomSampler(weights=valid_data.weights, num_samples=len(valid_ds), replacement=False)
-    train_dl = DataLoader(train_ds, batch_size=bs, drop_last=drop_last, sampler=train_sampler)
-    valid_dl = DataLoader(valid_ds, batch_size=bs, drop_last=drop_last, sampler=valid_sampler)
+    train_dl = DataLoader(train_ds, batch_size=bs, drop_last=drop_last, sampler=train_sampler, num_workers=num_workers, pin_memory=True)
+    valid_dl = DataLoader(valid_ds, batch_size=bs, drop_last=drop_last, sampler=valid_sampler, num_workers=num_workers, pin_memory=True)
 
     print(f'train dataloader: {len(train_dl)}')
     print(f'valid dataloader: {len(valid_dl)}')
     #
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f'using {device}') 
+    print(f'using {device}')
     #
     model = ResNet18(n_cls)
     if use_imagenet_wts:
@@ -188,4 +188,3 @@ if __name__ == '__main__':
 
     print(f'training complete for {args.fepochs + args.uepochs} epochs')
     print(f'checkpoints saved to checkpoints/model_c*.pth')
-    
