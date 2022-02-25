@@ -47,7 +47,7 @@ if __name__ == '__main__':
     test_df = pd.read_csv(args.csv)
     test_data = test_df.to_records(index=False)
     test_ds = APTOSDataset(test_data, pth=test_pth, augs=valid_augs, sz=resize_sz, test=True)
-    test_dl = DataLoader(test_ds, batch_size=bs, shuffle=False, drop_last=False, collate_fn=collate_fn_test)
+    test_dl = DataLoader(test_ds, batch_size=bs, shuffle=False, drop_last=False, collate_fn=collate_fn_test, num_workers=num_workers, pin_memory=True)
     #
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     #

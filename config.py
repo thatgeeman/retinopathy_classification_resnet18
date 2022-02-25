@@ -6,9 +6,9 @@ stats = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 resize_sz = 384
 bs = 64
 show=False
+num_workers = 4  # number of workers for dataloader 
 # for train.py
 drop_last = True
-num_workers = 4  # number of workers for dataloader 
 frac = 1.0  # fraction of samples to load from df
 n_cls = len(vocab)
 use_imagenet_wts = True
