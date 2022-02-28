@@ -61,6 +61,7 @@ def validate_epoch(valid_dl, model, loss_func=loss_func, show=True):
         preds = torch.softmax(acts, -1).argmax(-1, keepdim=True)
         valid_ck += get_ckscore(labels, preds)
         valid_f1 += get_f1score(labels, preds)
+        torch.cuda.synchronize(device=device)
     tqdm.write(
         f'valid_score:{(valid_ck / l_valid):.4f} valid_f1:{(valid_f1 / l_valid):.4f} valid_loss:{(valid_loss / l_valid):.4f}')
     if show:
@@ -89,6 +90,7 @@ def train(train_dl, valid_dl, epochs):
             preds = torch.softmax(acts, -1).argmax(-1, keepdim=True)
             train_ck += get_ckscore(labels, preds)
             train_f1 += get_f1score(labels, preds)
+        torch.cuda.synchronize(device=device)
         tqdm.write(
             f'train_score:{(train_ck / l_train):.4f} train_f1:{(train_f1 / l_train):.4f} train_loss:{(train_loss / l_train):.4f}')
         if e % 2 == 0:

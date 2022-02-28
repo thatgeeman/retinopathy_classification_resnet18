@@ -58,6 +58,7 @@ if __name__ == '__main__':
     print('running inference')
     result = infer(test_dl, model)
     #
+    torch.cuda.synchronize(device=device)
     sub = {'id_code': test_df.id_code,
            'diagnosis': result}
     sub = pd.DataFrame(sub)
