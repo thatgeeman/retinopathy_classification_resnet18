@@ -14,7 +14,13 @@ from config import *
 from draw import show_images
 from model import ResNet18
 from augs import train_augs, valid_augs
-from utils import APTOSDataset, update_model_wt
+from utils import APTOSDataset, update_model_wt, set_seed
+
+
+def freeze(model, requires_grad=False):
+    for name, p in model.named_parameters():
+        if 'fc' not in name:
+            p.requires_grad_(requires_grad)
 
 
 def make_ds(train_data, valid_data, train_pth, valid_pth, train_augs=None, valid_augs=None, resize_sz=384):
@@ -61,7 +67,7 @@ def validate_epoch(valid_dl, model, loss_func=loss_func, show=True):
         preds = torch.softmax(acts, -1).argmax(-1, keepdim=True)
         valid_ck += get_ckscore(labels, preds)
         valid_f1 += get_f1score(labels, preds)
-        torch.cuda.synchronize(device=device)
+    torch.cuda.synchronize(device=device)
     tqdm.write(
         f'valid_score:{(valid_ck / l_valid):.4f} valid_f1:{(valid_f1 / l_valid):.4f} valid_loss:{(valid_loss / l_valid):.4f}')
     if show:
@@ -86,6 +92,7 @@ def train(train_dl, valid_dl, epochs):
             train_loss += loss.item()
             loss.backward()
             optim.step()
+            lr_sch.step()
             # preds train
             preds = torch.softmax(acts, -1).argmax(-1, keepdim=True)
             train_ck += get_ckscore(labels, preds)
@@ -120,6 +127,7 @@ if __name__ == '__main__':
     print(f'train csv: {args.csv}')
 
     # begin
+    set_seed(seed)
     train_df = pd.read_csv(args.csv)
     counts = train_df.diagnosis.value_counts()
     weights = counts / counts.sum()
@@ -145,8 +153,10 @@ if __name__ == '__main__':
 
     train_sampler = WeightedRandomSampler(weights=train_data.weights, num_samples=len(train_ds), replacement=False)
     valid_sampler = WeightedRandomSampler(weights=valid_data.weights, num_samples=len(valid_ds), replacement=False)
-    train_dl = DataLoader(train_ds, batch_size=bs, drop_last=drop_last, sampler=train_sampler, num_workers=num_workers, pin_memory=True)
-    valid_dl = DataLoader(valid_ds, batch_size=bs, drop_last=drop_last, sampler=valid_sampler, num_workers=num_workers, pin_memory=True)
+    train_dl = DataLoader(train_ds, batch_size=bs, drop_last=drop_last, sampler=train_sampler, num_workers=num_workers,
+                          pin_memory=pin_memory)
+    valid_dl = DataLoader(valid_ds, batch_size=bs, drop_last=drop_last, sampler=valid_sampler, num_workers=num_workers,
+                          pin_memory=pin_memory)
 
     print(f'train dataloader: {len(train_dl)}')
     print(f'valid dataloader: {len(valid_dl)}')
@@ -154,17 +164,18 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'using {device}')
     #
+    torch.cuda.empty_cache()
+    #
     model = ResNet18(n_cls)
     if use_imagenet_wts:
         model = update_model_wt(model)
     model = model.to(device)
 
     # freeze
-    for name, p in model.named_parameters():
-        if 'fc' not in name:
-            p.requires_grad_(False)
+    freeze(model)
 
     optim = torch.optim.Adam(model.fc.parameters(), lr=lr_head_f)  # only train the head
+    lr_sch = torch.optim.lr_scheduler.CosineAnnealingLR(optim, T_max=5, eta_min=1e-6)
     print('training with frozen params')
     train(train_dl, valid_dl, args.fepochs)
     torch.save({
@@ -175,10 +186,9 @@ if __name__ == '__main__':
 
     optim.add_param_group({'params': L(model.parameters())[:-2], 'lr': lr_body_uf})  # make body trainable
     optim.param_groups[0]['lr'] = lr_head_uf
-    
+    lr_sch = torch.optim.lr_scheduler.CosineAnnealingLR(optim, T_max=5, eta_min=1e-6)
     # unfreeze
-    for name, p in model.named_parameters():
-        p.requires_grad_(True)
+    freeze(model, requires_grad=True)
 
     print('training full model')
     train(train_dl, valid_dl, args.uepochs)
