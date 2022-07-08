@@ -113,4 +113,4 @@ def set_seed(seed=42):
     os.environ['PYTHONHASHSEED'] = str(seed)
 
 
-set_seed(CONFIG['seed'])
+set_seed()

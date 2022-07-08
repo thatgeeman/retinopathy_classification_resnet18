@@ -13,12 +13,11 @@ class ConvBnAct(nn.Module):
     `noop` with `bn=False`, `act=False`.
     """
 
-    def __init__(self, in_ch=3, out_ch=64, k=3, s=1, p=0, d=1, bn=True, act=True):
+    def __init__(self, in_ch=3, out_ch=64, k=3, s=1, p=0, d=1, bn=True, act=True, bias=False):
         super(ConvBnAct, self).__init__()
-        store_attr('in_ch, out_ch, k, s, p, d, bn, act', self)
-        self.conv = nn.Conv2d(self.in_ch, self.out_ch, self.k, self.s, self.p, self.d, bias=False)
-        self.bn = nn.BatchNorm2d(self.out_ch) if self.bn else noop
-        self.act_fn = nn.ReLU() if self.act else noop
+        self.conv = nn.Conv2d(in_ch, out_ch, k, s, p, d, bias=bias)
+        self.bn = nn.BatchNorm2d(out_ch) if bn else noop
+        self.act_fn = nn.ReLU(inplace=True) if act else noop
 
     def forward(self, x):
         x = self.bn(self.conv(x))
@@ -26,23 +25,20 @@ class ConvBnAct(nn.Module):
 
 
 class RegularBlock(nn.Module):
-    """Regular block (no 1x1conv).
-    Adds the input to the output before applying the final act_fn.
+    """
+    Regular block (no 1x1conv).
     """
 
     def __init__(self, in_ch, out_ch):
         super(RegularBlock, self).__init__()
         assert in_ch == out_ch, "Regular block should have in_ch==out_ch"
-        self.conv1 = ConvBnAct(in_ch=in_ch, out_ch=out_ch, k=3, s=1, p=1)
+        self.conv1 = ConvBnAct(in_ch=in_ch, out_ch=out_ch, k=3, s=1, p=1, act=True)
         self.conv2 = ConvBnAct(in_ch=out_ch, out_ch=out_ch, k=3, s=1, p=1, act=False)
 
     def forward(self, x):
         x_copy = x.clone()
         x = self.conv1(x)
-        x = self.conv2(x)
-        # print(x.shape, x_copy.shape)
-        out = F.relu(x + x_copy)
-        # print(out.shape)
+        out = F.relu(self.conv2(x) + x_copy)
         return out
 
 
@@ -51,11 +47,11 @@ class ConvBlock(nn.Module):
     Adds the 1x1 conv input to the output before applying the final act_fn.
     """
 
-    def __init__(self, in_ch, out_ch, s=1):
+    def __init__(self, in_ch, out_ch, s=2):
         super(ConvBlock, self).__init__()
         self.conv1 = ConvBnAct(in_ch=in_ch, out_ch=out_ch, k=3, s=s, p=1)
         self.conv2 = ConvBnAct(in_ch=out_ch, out_ch=out_ch, k=3, p=1, act=False)
-        self.dsample = ConvBnAct(in_ch=in_ch, out_ch=out_ch, k=1, s=s, act=False)
+        self.dsample = ConvBnAct(in_ch=in_ch, out_ch=out_ch, k=1, s=s, bn=False, act=False)
 
     def forward(self, x):
         x_copy = x.clone()

@@ -14,6 +14,7 @@ torch = "==1.10.2"
 sklearn = "*"
 matplotlib = "*"
 torchvision = "*"
+ipykernel = "*"
 
 [dev-packages]
 
