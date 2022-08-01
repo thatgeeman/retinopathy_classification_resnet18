@@ -13,8 +13,10 @@ pillow = "==9.0.1"
 torch = "==1.10.2"
 sklearn = "*"
 matplotlib = "*"
-torchvision = "*"
+torchvision = "==0.11.3"
 ipykernel = "*"
+jupyter-core = "*"
+notebook = "*"
 
 [dev-packages]
 

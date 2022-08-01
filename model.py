@@ -24,13 +24,13 @@ class ConvBnAct(nn.Module):
         return self.act_fn(x)
 
 
-class RegularBlock(nn.Module):
+class BasicResBlock(nn.Module):
     """
-    Regular block (no 1x1conv).
+    Basic Residual block (no 1x1conv).
     """
 
     def __init__(self, in_ch, out_ch):
-        super(RegularBlock, self).__init__()
+        super(BasicResBlock, self).__init__()
         assert in_ch == out_ch, "Regular block should have in_ch==out_ch"
         self.conv1 = ConvBnAct(in_ch=in_ch, out_ch=out_ch, k=3, s=1, p=1, act=True)
         self.conv2 = ConvBnAct(in_ch=out_ch, out_ch=out_ch, k=3, s=1, p=1, act=False)
@@ -42,13 +42,13 @@ class RegularBlock(nn.Module):
         return out
 
 
-class ConvBlock(nn.Module):
-    """ConvBlock (with 1x1conv).
+class ConvResBlock(nn.Module):
+    """Residual Block with 1x1conv.
     Adds the 1x1 conv input to the output before applying the final act_fn.
     """
 
     def __init__(self, in_ch, out_ch, s=2):
-        super(ConvBlock, self).__init__()
+        super(ConvResBlock, self).__init__()
         self.conv1 = ConvBnAct(in_ch=in_ch, out_ch=out_ch, k=3, s=s, p=1)
         self.conv2 = ConvBnAct(in_ch=out_ch, out_ch=out_ch, k=3, p=1, act=False)
         self.dsample = ConvBnAct(in_ch=in_ch, out_ch=out_ch, k=1, s=s, bn=False, act=False)
@@ -87,10 +87,10 @@ def resnet_block(in_ch, out_ch, n_blocks, first_block=False):
     names = []
     for i in range(n_blocks):
         if i == 0 and not first_block:
-            layers.append(ConvBlock(in_ch, out_ch, s=2))
+            layers.append(ConvResBlock(in_ch, out_ch, s=2))
             names.append(f'conv_blk{i}')
         else:
-            layers.append(RegularBlock(out_ch, out_ch))
+            layers.append(BasicResBlock(out_ch, out_ch))
             names.append(f'reg_blk{i}')
     return list(zip(names, layers))
 
@@ -99,8 +99,8 @@ class ResNet18(nn.Module):
     def __init__(self, n_cls=2):
         super(ResNet18, self).__init__()
         params = dict(in_ch=3, out_ch=64, k=7, s=2, p=3)  # GoogLeNet
-        # x = [B, 3, 32, 32]
-        self.l1 = nn.Sequential(ConvBnAct(**params),
+
+        self.l1 = nn.Sequential(ConvBnAct(**params), # x = [B, 3, 32, 32] # CHECK
                                 nn.MaxPool2d(kernel_size=3, stride=2, padding=1))  # -> [B, 512, 16, 16]
         self.l2 = nn.Sequential(OrderedDict(resnet_block(64, 64, 2, first_block=True)))  # -> [B, 64, 8, 8]
         self.l3 = nn.Sequential(OrderedDict(resnet_block(64, 128, 2)))  # -> [B, 128, 4, 4]
@@ -113,4 +113,3 @@ class ResNet18(nn.Module):
     def forward(self, x):
         x = self.l5(self.l4(self.l3(self.l2(self.l1(x)))))
         return self.fc(self.flat(self.pool(x)))
-

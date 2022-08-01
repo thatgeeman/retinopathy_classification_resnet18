@@ -27,7 +27,7 @@ Setup environment and install dependencies:
 ```shell
 pip install pipenv
 cd retinopathy_classification_resnet18
-pipenv install
+pipenv install --python 3.8
 pipenv shell
 ```
 

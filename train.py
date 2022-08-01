@@ -77,7 +77,7 @@ def validate_epoch(valid_dl, model, loss_func=loss_func, show=True):
 def train(train_dl, valid_dl, epochs):
     for e in range(epochs):
         print(f'epoch {e}')
-        model.train()
+        model.train() # sets the weights so that it can be updated
         train_loss = 0.0
         train_ck = 0.0
         train_f1 = 0.0
